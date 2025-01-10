@@ -98,7 +98,8 @@ is needed. You can just write:
 ```scala
 import scala.util.chaining.*
 
-val result = 5.pipe(_ + 1).pipe(_ * 2) // 12
+5.pipe(_ + 1).pipe(n => s"The number is $n").tap(println)
+// output: "The number is 6"
 ```
 /ad-break
 
