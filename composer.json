@@ -3,7 +3,6 @@
     "description": "A box wrapper that can pipe and assert",
     "type": "library",
     "license": "MIT",
-    "version": "0.0.1",
     "autoload": {
         "psr-4": {
             "Epic64\\PhpBox\\": "src/",
