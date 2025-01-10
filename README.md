@@ -93,7 +93,14 @@ Small **ad break** for [Scala](https://www.scala-lang.org/). The ENTIRE above co
 ```scala
 class Box[T](value: T)
 ```
-ad break over.
+To add insult to injury, Scala has extension methods that you can add to any class on the fly. So no Box class
+is needed. You can just write:
+```scala
+import scala.util.chaining.*
+
+val result = 5.pipe(_ + 1).pipe(_ * 2) // 12
+```
+/ad-break
 
 Examples:
 - `Box::of(5)` will be of type `Box<int>`
