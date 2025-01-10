@@ -1,0 +1,34 @@
+{
+    "name": "epic-64/php-box",
+    "description": "A box wrapper that can pipe and assert",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.0.1",
+    "autoload": {
+        "psr-4": {
+            "Epic64\\PhpBox\\": "src/",
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "William Raendchen",
+            "email": "william.raendchen@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "rector/rector": "^2.0",
+        "pestphp/pest": "^3.7",
+        "phpstan/phpstan-strict-rules": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

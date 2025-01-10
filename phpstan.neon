@@ -1,0 +1,10 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    paths:
+        - src
+        - tests
+    level: 9
+    strictRules:
+        disallowedLooseComparison: false
