@@ -14,6 +14,10 @@ The only hard requirement is PHP 8.0 or higher.
 
 However, I STRONGLY recommend using PHPStan at level 8 or higher to get the most out of this helper.
 
+# Local Testing and Development (Optional)
+If you want to run the tests or play around with the code, read
+the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
 # Usage
 You put any value into a box.
 
