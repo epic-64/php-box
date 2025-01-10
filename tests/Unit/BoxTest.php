@@ -35,7 +35,7 @@ test('assertion by value passes when the values are the same', function () {
 test('assertion by callback fails when check is not passed', function () {
     $expectedMessage = 'Value did not pass the callback check';
 
-    expect(fn() => Box::of(5)->assert(fn($x) => $x < 5)) // @phpstan-ignore smaller.alwaysFalse
+    expect(fn() => Box::of(5)->assert(fn($x) => $x < 5))
         ->toThrow(LogicException::class, $expectedMessage);
 });
 
