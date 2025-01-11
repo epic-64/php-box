@@ -167,8 +167,8 @@ to reason about statically. This holds especially true for its Pipeline facade, 
 Therefore, I see a legitimate need for my Box class.
 
 # Resources
-Quick start guide for how to set up PHPStan in Laravel:
+Quick start guide for how to set up PHPStan in Laravel:  
 [https://refactorers-journal.ghost.io/adding-phpstan-to-a-laravel-application/](https://refactorers-journal.ghost.io/adding-phpstan-to-a-laravel-application/)
 
-More on my Box class, type-safety and how to deal with PHPStan on level 9:
+More on my Box class, type-safety and how to deal with PHPStan on level 9:  
 [https://refactorers-journal.ghost.io/type-safe-pipe-in-php-part-2/](https://refactorers-journal.ghost.io/type-safe-pipe-in-php-part-2/)
