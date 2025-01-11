@@ -98,7 +98,13 @@ is needed. You can just write:
 ```scala
 import scala.util.chaining.*
 
-5.pipe(_ + 1).pipe(n => s"The number is $n").tap(println)
+"Hello World"
+  .toCharArray
+  .map(_.toInt)
+  .sum
+  .pipe(n => s"The number is $n")
+  .pipe(println) // prints "The number is 1052"
+```
 // output: "The number is 6"
 ```
 /ad-break
