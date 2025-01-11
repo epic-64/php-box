@@ -105,8 +105,6 @@ import scala.util.chaining.*
   .pipe(n => s"The number is $n")
   .pipe(println) // prints "The number is 1052"
 ```
-// output: "The number is 6"
-```
 /ad-break
 
 Examples:
