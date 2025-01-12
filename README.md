@@ -109,8 +109,8 @@ import scala.util.chaining.*
   .toCharArray
   .map(_.toInt)
   .sum
-  .map(n => s"The number is $n")
-  .map(println) // prints "The number is 1052"
+  .pipe(n => s"The number is $n")
+  .tap(println) // prints "The number is 1052"
 ```
 /ad-break
 
