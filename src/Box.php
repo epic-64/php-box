@@ -7,7 +7,7 @@ namespace Epic64\PhpBox;
 use LogicException;
 
 /**
- * Wrapper class to enable chainable pipe transformations.
+ * A container that allows chaining transformations and assertions on a value.
  *
  * @template T
  */
@@ -39,11 +39,14 @@ class Box
     /**
      * Apply a transformation function to the value.
      *
+     * Caution: This method will reuse values passed by reference (e.g. objects) to minimize performance overhead.
+     * For a side effect free version, use pure() instead.
+     *
      * @template U
      * @param callable(T): U $callback
      * @return Box<U>
      */
-    public function pipe(callable $callback): Box
+    public function map(callable $callback): Box
     {
         return new self($callback($this->value));
     }
@@ -56,7 +59,7 @@ class Box
      * @param callable(T): U $callback
      * @return U
      */
-    public function pull(callable $callback)
+    public function get(callable $callback)
     {
         return $callback($this->unbox());
     }
@@ -82,7 +85,7 @@ class Box
      */
     public function assert(mixed $check): Box
     {
-        $isClosure = is_callable($check) && !is_string($check);
+        $isClosure = is_callable($check);
 
         $pass = $isClosure
             ? $check($this->value)
@@ -111,10 +114,10 @@ class Box
     public function dump(?string $message = null): Box
     {
         if ($message !== null) {
-            echo $message . ': ';
+            echo $message . ': '; // @phpstan-ignore ekinoBannedCode.expression
         }
 
-        var_dump($this->value);
+        var_dump($this->value); // @phpstan-ignore ekinoBannedCode.function
 
         return $this;
     }

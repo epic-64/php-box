@@ -1,5 +1,6 @@
 includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/ekino/phpstan-banned-code/extension.neon
 
 parameters:
     paths:
@@ -8,3 +9,5 @@ parameters:
     level: 9
     strictRules:
         disallowedLooseComparison: false
+    banned_code:
+        non_ignorable: false

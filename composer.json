@@ -23,7 +23,8 @@
         "phpstan/phpstan": "^2.1",
         "rector/rector": "^2.0",
         "pestphp/pest": "^3.7",
-        "phpstan/phpstan-strict-rules": "^2.0"
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "ekino/phpstan-banned-code": "^3.0"
     },
     "config": {
         "allow-plugins": {

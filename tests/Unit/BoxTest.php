@@ -4,8 +4,8 @@ use Epic64\PhpBox\Box;
 
 test('we can box, transform and unbox a value', function () {
     $result = Box::of(5)
-        ->pipe(fn($x) => $x * 2)
-        ->pipe(fn($x) => $x + 1)
+        ->map(fn($x) => $x * 2)
+        ->map(fn($x) => $x + 1)
         ->unbox();
 
     expect($result)->toBe(11);
@@ -13,8 +13,8 @@ test('we can box, transform and unbox a value', function () {
 
 test('we can combine a pipe and unbox into one statement by using pull', function () {
     $result = Box::of(5)
-        ->pipe(fn($x) => $x * 2)
-        ->pull(fn($x) => $x + 1);
+        ->map(fn($x) => $x * 2)
+        ->get(fn($x) => $x + 1);
 
     expect($result)->toBe(11);
 });
@@ -26,17 +26,51 @@ test('assertion by value fails with a meaningful message', function () {
         ->toThrow(LogicException::class, $expectedMessage);
 });
 
-test('assertion by value passes when the values are the same', function () {
-    $result = Box::of('Hello')->pipe(strtoupper(...))->assert('HELLO')->unbox();
+// @phpstan-ignore-next-line method.notFound
+test('assertion by value passes when the values are the same', function (mixed $input, mixed $output) {
+    $result = Box::of($input)->assert($output)->unbox();
 
-    expect($result)->toBe('HELLO');
+    expect($result)->toBe($input);
+})->with([
+    ['HELLO', 'HELLO'],
+    [5, 5],
+    [5.5, 5.5],
+    [true, true],
+    [false, false],
+    [null, null],
+    [[], []],
+    [[1, 2, 3], [1, 2, 3]],
+    [['a' => 1, 'b' => 2], ['a' => 1, 'b' => 2]],
+    ['str_split', 'str_split'],  // making sure functions as strings are treated as strings
+    // [(object)[], (object)[]], // this one will fail because two objects have different references
+]);
+
+test('assertion by value fails for two equal objects', function () {
+    $object1 = (object)['number' => 5];
+    $object2 = (object)['number' => 5];
+
+    expect(fn() => Box::of($object1)->assert($object2))->toThrow(LogicException::class);
 });
 
-test('assertion by callback fails when check is not passed', function () {
-    $expectedMessage = 'Value did not pass the callback check';
+test('assertion by value passes for two equal objects with the same reference', function () {
+    $object = (object)['number' => 5];
 
-    expect(fn() => Box::of(5)->assert(fn($x) => $x < 5))
-        ->toThrow(LogicException::class, $expectedMessage);
+    $result = Box::of($object)->assert($object)->unbox();
+
+    expect($result->number)->toBe(5);
+});
+
+// This test is not here to "lock in" desired behavior. It is here to document a pitfall.
+test('performing a mutation on an object using map() will produce side effects', function () {
+    $object = (object)['number' => 5];
+
+    // Avoid code like this at all costs!
+    // Problem 1: The original object is mutated
+    // Problem 2: The object is thrown away and instead $value will simply be 10
+    $newObject = Box::of($object)->map(fn($x) => $x->number = 10)->unbox();
+
+    expect($object->number)->toBe(10, 'Bad: Original object is mutated');
+    expect($newObject)->toBeInt('Bad: $newObject is not an object, instead it is an int.');
 });
 
 test('assertion by callback passes when check is passed', function () {
@@ -50,12 +84,12 @@ test('assertion by callback passes when check is passed', function () {
 
 test('we can chain multiple transformations and assertions', function () {
     $result = Box::of('Hello')
-        ->pipe(strtoupper(...))->assert('HELLO')
-        ->pipe(strrev(...))->assert('OLLEH')
-        ->pipe(str_split(...))->assert(['O', 'L', 'L', 'E', 'H'])
-        ->pipe(fn($arr) => array_map(ord(...), $arr))->assert([79, 76, 76, 69, 72])
-        ->pipe(array_sum(...))->assert(372)->assert(fn($x) => $x > 0)
-        ->pull(fn($x) => $x + 100);
+        ->map(strtoupper(...))->assert('HELLO')
+        ->map(strrev(...))->assert('OLLEH')
+        ->map(str_split(...))->assert(['O', 'L', 'L', 'E', 'H'])
+        ->map(fn($arr) => array_map(ord(...), $arr))->assert([79, 76, 76, 69, 72])
+        ->map(array_sum(...))->assert(372)->assert(fn($x) => $x > 0)
+        ->get(fn($x) => $x + 100);
 
     expect($result)->toBe(472);
 });
