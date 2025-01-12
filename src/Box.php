@@ -46,6 +46,20 @@ class Box
     }
 
     /**
+     * Apply a transformation function to the box itself
+     *
+     * This method will always return a new instance of Box, even for objects.
+     *
+     * @template U
+     * @param callable(self<T>): Box<U> $callback
+     * @return Box<U>
+     */
+    public function flatMap(callable $callback): Box
+    {
+        return $callback($this);
+    }
+
+    /**
      * Unwrap the value and apply a final transformation on it.
      * Can be used instead of `unbox` to terminate the sequence.
      *
@@ -77,7 +91,7 @@ class Box
      * @param U|callable(T):bool $check
      * @return Box<T>
      */
-    public function assert(mixed $check): Box
+    public function assert(mixed $check, string $message = ''): Box
     {
         $isClosure = is_callable($check);
 
@@ -86,7 +100,7 @@ class Box
             : $this->value === $check;
 
         if (! $pass) {
-            $message = $isClosure
+            $report = $isClosure
                 ? 'Value did not pass the callback check.'
                 : sprintf(
                     'Failed asserting that two values are the same. Expected %s, got %s.',
@@ -94,7 +108,11 @@ class Box
                     var_export($this->value, true)
                 );
 
-            throw new LogicException($message);
+            if ($message !== '') {
+                $report = $message . ' | ' . $report;
+            }
+
+            throw new LogicException($report);
         }
 
         return $this;
