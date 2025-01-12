@@ -62,17 +62,13 @@ $value = Box::of(5)
 echo $value; // 12
 ```
 
-Transform values into anything you want:
+Transform values into anything you want. Optionally: pass functions as variables.
 ```php
-$toGreeting = fn(string $name): string
-    => "Hello, $name!";
-$toGreetingResource = fn(string $item): array
-    => ['text' => $item, 'length' => strlen($item)];
-$toJsonStrict = fn(array $item): string
-    => json_encode($item, flags: JSON_THROW_ON_ERROR);
+$toGreetingResource = fn(string $item): array => ['text' => $item, 'length' => strlen($item)];
+$toJsonStrict = fn(array $item): string => json_encode($item, flags: JSON_THROW_ON_ERROR);
 
 $value = Box::of('World')
-    ->map($toGreeting)
+    ->map(fn(string $name): string => "Hello, $name!")
     ->map($toGreetingResource)
     ->get($toJsonStrict);
 
