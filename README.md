@@ -64,9 +64,12 @@ echo $value; // 12
 
 Transform values into anything you want:
 ```php
-$toGreeting = fn($name) => "Hello, $name!";
-$toGreetingResource = fn($item) => ['text' => $item, 'length' => strlen($item)];
-$toJsonStrict = fn($item) => json_encode($item, flags: JSON_THROW_ON_ERROR);
+$toGreeting = fn(string $name): string
+    => "Hello, $name!";
+$toGreetingResource = fn(string $item): array
+    => ['text' => $item, 'length' => strlen($item)];
+$toJsonStrict = fn(array $item): string
+    => json_encode($item, flags: JSON_THROW_ON_ERROR);
 
 $value = Box::of('World')
     ->map($toGreeting)
