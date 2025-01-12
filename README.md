@@ -84,24 +84,28 @@ $user = Box::of($inputEmail)
     ->get(fn($it) => $userRepository->create(['email' => $it]));
 ```
 
-Or make it shorter by using higher abstraction levels:
-
+Using flatMap, you can compose presets of operations on boxes:
 ```php
-// potentially defined elsewhere
-function isValidEmail(mixed $email): bool
+/** @throws LogicException */
+function assertEmail(Box $box): Box
 {
-    return is_string($email) 
-        && strlen($email) > 0
-        && strlen($email) < 256
-        && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    return $box
+        ->assert(fn($x)        => is_string($x), 'Not a string')
+        ->assert(fn(string $x) => strlen($x) > 0, 'Too short')
+        ->assert(fn(string $x) => strlen($x) < 256, 'Too long')
+        ->assert(fn(string $x) => filter_var($x, FILTER_VALIDATE_EMAIL), 'Not an email');
 }
 
-$validEmail = Box::of('john.doe@example.org')->assertGet(isValidEmail(...));
-// $validEmail === 'john.doe@example.org'
+$validEmail = Box::of('')->flatMap(assertEmail(...))->unbox();
+// throws LogicException: "Value is too short"
 
-$validEmail2 = Box::of('asdf')->assertGet(isValidEmail(...));
-// throws LogicException
+$user = Box::of('john@example.org')
+    ->flatMap(fn($box) => assertEmail($box))
+    ->get(fn($email) => $userRepository->create(['email' => $email]));
 ```
+Note, in this example we still have 4 separate assertions and error messages.
+Using flatMap is the key here. Unlike map(), which transforms the value inside the Box,
+flatMap() transforms the Box itself. This allows us to compose behavior in a more functional way.
 
 # Type Safety
 Thanks to meticulously crafted PHPDoc annotations, this class is type safe if you use PHPStan for static analysis.

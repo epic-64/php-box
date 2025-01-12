@@ -70,6 +70,27 @@ test('assertGet throws an exception when the assertion fails', function () {
     expect(fn() => Box::of(5)->assertGet(6))->toThrow(LogicException::class);
 });
 
+test('flatMap allows us to replace the box itself', function () {
+    $result = Box::of(5)
+        ->flatMap(fn(Box $x) => $x->assert(5)->map(fn($x) => $x + 1))
+        ->unbox();
+
+    expect($result)->toBe(6);
+});
+
+test('use flatMap to compose actions', function () {
+    $isValidEmail = function (Box $box) {
+        return $box
+            ->assert(fn(mixed $x)  => is_string($x), 'Not a string')
+            ->assert(fn(string $x) => strlen($x) > 0, 'Too short')
+            ->assert(fn(string $x) => strlen($x) < 256, 'Too long')
+            ->assert(fn(string $x) => filter_var($x, FILTER_VALIDATE_EMAIL), 'Not an email');
+    };
+
+    expect(fn() => Box::of('asdf')->flatMap($isValidEmail)->unbox())
+        ->toThrow(LogicException::class, 'Not an email | Value did not pass the callback check.');
+});
+
 // This test is not here to "lock in" desired behavior. It is here to document a pitfall.
 test('performing a mutation on an object using map() will produce side effects', function () {
     $object = (object)['number' => 5];
