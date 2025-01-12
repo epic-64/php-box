@@ -96,7 +96,7 @@ function isValidEmail(mixed $email): bool
         && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
-$validEmail = Box::of($input)->assert(isValidEmail(...))->unbox();
+$validEmail = Box::of($input)->assertGet(isValidEmail(...));
 ```
 
 # Type Safety

@@ -60,6 +60,16 @@ test('assertion by value passes for two equal objects with the same reference', 
     expect($result->number)->toBe(5);
 });
 
+test('assertGet returns the value when the assertion passes', function () {
+    $result = Box::of(5)->assertGet(5);
+
+    expect($result)->toBe(5);
+});
+
+test('assertGet throws an exception when the assertion fails', function () {
+    expect(fn() => Box::of(5)->assertGet(6))->toThrow(LogicException::class);
+});
+
 // This test is not here to "lock in" desired behavior. It is here to document a pitfall.
 test('performing a mutation on an object using map() will produce side effects', function () {
     $object = (object)['number' => 5];
