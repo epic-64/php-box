@@ -85,34 +85,23 @@ class Box
     /**
      * @param T $value
      */
-    public function __construct($value)
+    public function __construct(private mixed $value)
     {
-        $this->value = $value;
     }
 }
 ```
+
+Small **ad break** for [Scala](https://www.scala-lang.org/). The same code in Scala 3 looks like this:
+```scala
+case class Box[T](value: T)
+```
+/ad-break
 
 The `@template T` annotation tells PHPStan that the class is generic and that the type of the value is T.
 In the constructor, we use the $value parameter with the type T,
 and the type of the Box is automatically reverse engineered from the input.
 
-Small **ad break** for [Scala](https://www.scala-lang.org/). The ENTIRE above code in Scala 3 looks like this:
-```scala
-class Box[T](value: T)
-```
-To add insult to injury, Scala has extension methods that you can add to any class on the fly. So no Box class
-is needed. You can just write:
-```scala
-import scala.util.chaining.*
 
-"Hello World"
-  .toCharArray
-  .map(_.toInt)
-  .sum
-  .pipe(n => s"The number is $n")
-  .tap(println) // prints "The number is 1052"
-```
-/ad-break
 
 Examples:
 - `Box::of(5)` will be of type `Box<int>`
