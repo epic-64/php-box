@@ -14,11 +14,6 @@ use LogicException;
 class Box
 {
     /**
-     * @var T
-     */
-    private $value;
-
-    /**
      * @template U
      * @param U $value
      * @return Box<U>
@@ -31,9 +26,8 @@ class Box
     /**
      * @param T $value
      */
-    public function __construct($value)
+    public function __construct(private mixed $value)
     {
-        $this->value = $value;
     }
 
     /**
