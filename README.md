@@ -62,6 +62,20 @@ $value = Box::of(5)
 echo $value; // 12
 ```
 
+Transform values into anything you want:
+```php
+$toGreeting = fn($name) => "Hello, $name!";
+$toGreetingResource = fn($item) => ['text' => $item, 'length' => strlen($item)];
+$toJsonStrict = fn($item) => json_encode($item, flags: JSON_THROW_ON_ERROR);
+
+$value = Box::of('World')
+    ->map($toGreeting)
+    ->map($toGreetingResource)
+    ->get($toJsonStrict);
+
+echo $value; // {"text":"Hello, World!","length":13}
+```
+
 You could validate an email address and create a user like this if you wanted to:
 ```php
 $user = Box::of($inputEmail)
