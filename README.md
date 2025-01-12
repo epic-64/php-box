@@ -21,36 +21,43 @@ the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 # Usage
 You put any value into a box.
 
-Then you can chain pipe(), dump() and assert() calls on it.
+Then you can chain map(), dump() and assert() calls on it.
 
-To get the value out of the box, call unbox() or pull().
+To get the value out of the box, call unbox() or get().
+
+## Note
+In an earlier version:
+- map() was called pipe()
+- get() was called pull()
 
 ## Examples
 
 ```php
 $value = Box::of(5)
-    ->pipe(fn($value) => $value + 1)
-    ->pipe(fn($value) => $value * 2)
+    ->map(fn($value) => $value + 1)
+    ->map(fn($value) => $value * 2)
     ->unbox();
 
 echo $value; // 12
 ```
 
+Use get() to combine map() and unbox() in one call:
 ```php
 $value = Box::of(5)
-    ->pipe(fn($value) => $value + 1)
-    ->pull(fn($value) => $value * 2);
+    ->map(fn($value) => $value + 1)
+    ->get(fn($value) => $value * 2);
 
 echo $value; // 12
 ```
 
+Perform assertions or dump the value inline:
 ```php
+$isEven = fn($value) => $value % 2 === 0;
+
 $value = Box::of(5)
-    ->pipe(fn($it) => $it + 1)
-    ->assert(6) // throws a LogicException if the value is not 6 (strict equality)
-    ->assert(fn($it) => $it % 2 === 0) // throws a LogicException if the callback returns false
-    ->dump() // prints the value
-    ->pull(fn($it) => $it * 2); // doubles the value and unboxes it
+    ->map(fn($it) => $it + 1)->assert(6)
+    ->map(fn($it) => $it * 2)->assert($isEven)->dump()
+    ->unbox();
 
 echo $value; // 12
 ```
@@ -61,7 +68,7 @@ $user = Box::of($inputEmail)
     ->assert(is_string(...))
     ->assert(fn($it) => strlen($it) > 0 && strlen($it) < 256)
     ->assert(fn($it) => filter_var($it, FILTER_VALIDATE_EMAIL) !== false)
-    ->pull(fn($it) => $userRepository->create(['email' => $it]));
+    ->get(fn($it) => $userRepository->create(['email' => $it]));
 ```
 
 # Type Safety
@@ -102,8 +109,8 @@ import scala.util.chaining.*
   .toCharArray
   .map(_.toInt)
   .sum
-  .pipe(n => s"The number is $n")
-  .pipe(println) // prints "The number is 1052"
+  .map(n => s"The number is $n")
+  .map(println) // prints "The number is 1052"
 ```
 /ad-break
 
@@ -116,7 +123,7 @@ If you do not understand what these pointy brackets mean, you should read up on 
 Every language on the planet except PHP has them. Thanks to PHPStan, we can have them too.
 Just with lots more (keyboard) typing.
 
-Have a look at the pipe() method
+Have a look at the map() method
 ```php
 /**
  * Apply a transformation function to the value.
@@ -125,7 +132,7 @@ Have a look at the pipe() method
  * @param callable(T): U $callback
  * @return Box<U>
  */
-public function pipe(callable $callback): Box
+public function map(callable $callback): Box
 {
     return new self($callback($this->value));
 }
@@ -140,10 +147,10 @@ Please pick one of these and learn it.
 
 ```php
 $value = Box::of('Hello World')                               // string
-    ->pipe(fn($value) => strtoupper($value))                  // string 
-    ->pipe(fn($value) => str_replace('WORLD', 'PHP', $value)) // string
-    ->pipe(fn($value) => str_split($value))                   // array<string>
-    ->pull(fn($value) => $value - 1); // phpstan: Binary operation "-" between array<int, string> and 1 results in an error.
+    ->map(fn($value) => strtoupper($value))                  // string 
+    ->map(fn($value) => str_replace('WORLD', 'PHP', $value)) // string
+    ->map(fn($value) => str_split($value))                   // array<string>
+    ->get(fn($value) => $value - 1); // phpstan: Binary operation "-" between array<int, string> and 1 results in an error.
 ```
 In the last transformation, I try to subtract 1 from an array of strings. An unsound operation to say the least.
 PHPStan will catch this guaranteed error and tell you about it. Without writing any tests.
