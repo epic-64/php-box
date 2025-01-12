@@ -96,7 +96,11 @@ function isValidEmail(mixed $email): bool
         && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
-$validEmail = Box::of($input)->assertGet(isValidEmail(...));
+$validEmail = Box::of('john.doe@example.org')->assertGet(isValidEmail(...));
+// $validEmail === 'john.doe@example.org'
+
+$validEmail2 = Box::of('asdf')->assertGet(isValidEmail(...));
+// throws LogicException
 ```
 
 # Type Safety
