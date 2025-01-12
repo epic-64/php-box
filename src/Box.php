@@ -101,6 +101,20 @@ class Box
     }
 
     /**
+     * Run an assertion against the value and return it.
+     *
+     * @template U
+     * @param U|callable(T):bool $check
+     * @return T
+     */
+    public function assertGet(mixed $check): mixed
+    {
+        $this->assert($check);
+
+        return $this->unbox();
+    }
+
+    /**
      * Dump the value to the console.
      *
      * @return Box<T>
