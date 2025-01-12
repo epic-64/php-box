@@ -84,6 +84,23 @@ $user = Box::of($inputEmail)
     ->get(fn($it) => $userRepository->create(['email' => $it]));
 ```
 
+Or make it shorter by using higher abstraction levels:
+
+```php
+// potentially defined elsewhere
+function isValidEmail(mixed $email): bool
+{
+    return is_string($email) 
+        && strlen($email) > 0
+        && strlen($email) < 256
+        && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+$user = Box::of($inputEmail)
+    ->assert(fn($it) => isValidEmail($it))
+    ->get(fn($it) => $userRepository->create(['email' => $it]));
+```
+
 # Type Safety
 Thanks to meticulously crafted PHPDoc annotations, this class is type safe if you use PHPStan for static analysis.
 
