@@ -1,13 +1,11 @@
 # Welcome to PhpBox
 
-PhpBox contains exactly one class: `Box`.
-
-You can find it here: [src/Box.php](src/Box.php)
+PhpBox contains two classes:
+- `Box` [src/Box.php](src/Box.php)
+- `TryBox` [src/TryBox.php](src/TryBox.php)
 
 # Installation
-Currently, there is no composer package. 
-
-Simply copy the `Box.php` file to your project and adjust its namespace if needed.
+A composer package is in the works, but I recommend just copying the files into your project for now.
 
 # Requirements
 The only hard requirement is PHP 8.0 or higher.
@@ -23,25 +21,20 @@ You put any value into a box.
 
 Then you can chain map(), dump() and assert() calls on it.
 
-To get the value out of the box, call unbox() or get().
+To get the value out of the box, call value() or get().
 
-## Note
-In an earlier version:
-- map() was called pipe()
-- get() was called pull()
-
-## Examples
+## Box Examples
 
 ```php
 $value = Box::of(5)
     ->map(fn($value) => $value + 1)
     ->map(fn($value) => $value * 2)
-    ->unbox();
+    ->value();
 
 echo $value; // 12
 ```
 
-Use get() to combine map() and unbox() in one call:
+Use get() to combine map() and value() in one call:
 ```php
 $value = Box::of(5)
     ->map(fn($value) => $value + 1)
@@ -57,7 +50,7 @@ $isEven = fn($value) => $value % 2 === 0;
 $value = Box::of(5)
     ->map(fn($it) => $it + 1)->assert(6)
     ->map(fn($it) => $it * 2)->assert($isEven)->dump()
-    ->unbox();
+    ->value();
 
 echo $value; // 12
 ```
@@ -84,28 +77,85 @@ $user = Box::of($inputEmail)
     ->get(fn($it) => $userRepository->create(['email' => $it]));
 ```
 
-Using flatMap, you can compose presets of operations on boxes:
+Using mod(), you can compose presets of operations:
 ```php
 /** @throws LogicException */
 function assertEmail(Box $box): Box
 {
     return $box
-        ->assert(fn($x)        => is_string($x), 'Not a string')
+        ->assert(fn(mixed $x)  => is_string($x), 'Not a string')
         ->assert(fn(string $x) => strlen($x) > 0, 'Too short')
         ->assert(fn(string $x) => strlen($x) < 256, 'Too long')
         ->assert(fn(string $x) => filter_var($x, FILTER_VALIDATE_EMAIL), 'Not an email');
 }
 
-$validEmail = Box::of('')->flatMap(assertEmail(...))->unbox();
-// throws LogicException: "Value is too short"
+$validEmail = Box::of('')->flatMap(assertEmail(...))->value();
+// throws LogicException: "Too short"
 
 $user = Box::of('john@example.org')
-    ->flatMap(fn($box) => assertEmail($box))
+    ->mod(fn($box) => assertEmail($box))
     ->get(fn($email) => $userRepository->create(['email' => $email]));
 ```
-Note, in this example we still have 4 separate assertions and error messages.
-Using flatMap is the key here. Unlike map(), which transforms the value inside the Box,
-flatMap() transforms the Box itself. This allows us to compose behavior in a more functional way.
+
+## TryBox Examples
+
+TryBox works just like Box, except that it catches any and all errors instead of blowing up directly.
+Its value() method has a more complicated return type, which is either T or Throwable.
+- advantage: you can run a chain without risk of blowing up (subsequent map() calls will be skipped),
+and then decide what to do with the error at the end.
+- disadvantage: you have to handle the error case even if you're sure it will never happen.
+
+Let's define a realistic function that sometimes throws an error (like a database call or an API request). In this
+case it either returns whatever was passed in or throws a RuntimeException at random.
+```php
+/**
+  * @template T
+  * @param T $value
+  * @return T
+  *
+  * @throws RuntimeException 
+  */
+function roulette($value)
+{
+    if (random_int(0, 1) === 1) {
+        throw new RuntimeException('boo');
+    }
+    
+    return $value;
+}
+```
+
+Let's use this dangerous function in a TryBox chain:
+```php
+$result = TryBox::of(5)
+    ->map(fn($value) => roulette($value)) // TryBox stores the exception
+    ->map(fn($value) => $value * 2)
+    ->map(fn($value) => $value + 1)
+    ->value();
+
+// type signature is int|Throwable, so we have to handle the error case
+if ($result instanceof Throwable) {
+    echo $result->getMessage(); // boo
+    return;
+}
+
+// if we reach this line, $result is guaranteed to be an int
+$calc = $result + 1;
+echo $calc;
+```
+
+If you are sure the error case will never happen, or simply don't care, you can use rip() instead of value():
+`rip()` will either throw the stored error (if any) or return the value of type T.
+```php
+$result = TryBox::of(5)
+    ->map(fn($value) => roulette($value))
+    ->map(fn($value) => $value * 2)
+    ->map(fn($value) => $value + 1)
+    ->rip(); // The original runtime exception will be thrown here, if present
+
+// if we reach this line, $result is guaranteed to be an int
+$calc = $result + 1;
+```
 
 # Type Safety
 Thanks to meticulously crafted PHPDoc annotations, this class is type safe if you use PHPStan for static analysis.
@@ -137,8 +187,6 @@ The `@template T` annotation tells PHPStan that the class is generic and that th
 In the constructor, we use the $value parameter with the type T,
 and the type of the Box is automatically reverse engineered from the input.
 
-
-
 Examples:
 - `Box::of(5)` will be of type `Box<int>`
 - `Box::of('hello')` will be of type `Box<string>`
@@ -168,10 +216,8 @@ the type of U, and the resulting `Box<U>` is inferred from the return type of th
 
 This mechanism is incredibly powerful at preventing you from writing bad code. And again, a totally normal feature
 in other languages like Java, Scala, Kotlin, Haskell, Rust, F#, C#, Go, Swift, TypeScript.
-Please pick one of these and learn it.
-
 ```php
-$value = Box::of('Hello World')                               // string
+$value = Box::of('Hello World')                              // string
     ->map(fn($value) => strtoupper($value))                  // string 
     ->map(fn($value) => str_replace('WORLD', 'PHP', $value)) // string
     ->map(fn($value) => str_split($value))                   // array<string>
