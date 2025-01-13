@@ -125,7 +125,16 @@ function roulette($value)
 }
 ```
 
-Let's use this dangerous function in a TryBox chain:
+Let's see what happens if we call this function in a Box map():
+```php
+$result = Box::of(5)
+    ->map(fn($value) => roulette($value)) // program blows up here (maybe)
+    ->map(fn($value) => $value * 2)
+    ->map(fn($value) => $value + 1)
+    ->value();
+```
+
+If you do not want your program to blow up at any possible moment, you can use TryBox instead:
 ```php
 $result = TryBox::of(5)
     ->map(fn($value) => roulette($value)) // TryBox stores the exception
