@@ -9,7 +9,7 @@ use LogicException;
 /**
  * A container that allows chaining transformations and assertions on a value.
  *
- * @template T
+ * @template T of mixed
  */
 class Box
 {
@@ -69,7 +69,7 @@ class Box
      */
     public function get(callable $callback)
     {
-        return $callback($this->unbox());
+        return $callback($this->value());
     }
 
     /**
@@ -77,7 +77,7 @@ class Box
      *
      * @return T
      */
-    public function unbox()
+    public function value()
     {
         return $this->value;
     }
@@ -129,7 +129,7 @@ class Box
     {
         $this->assert($check);
 
-        return $this->unbox();
+        return $this->value();
     }
 
     /**

@@ -35,9 +35,24 @@ class TryBox
      *
      * @template U
      * @param callable(T): U $callback
-     * @return TryBox<U>|TryBox<Throwable>
+     * @return TryBox<Throwable>|TryBox<U>
      */
     public function map(callable $callback): TryBox
+    {
+        return $this->value instanceof Throwable
+            ? $this
+            : $this->transform($callback);
+    }
+
+    /**
+     * Apply a transformation function to the value.
+     * Will catch exceptions and return them as a value.
+     *
+     * @template U
+     * @param callable(T): U $callback
+     * @return TryBox<U>|TryBox<Throwable>
+     */
+    private function transform(callable $callback): TryBox
     {
         try {
             return new self($callback($this->value));
@@ -49,13 +64,11 @@ class TryBox
     /**
      * Apply a transformation function to the box itself
      *
-     * This method will always return a new instance of Box, even for objects.
-     *
      * @template U
      * @param callable(self<T>): TryBox<U> $callback
      * @return TryBox<U>|TryBox<Throwable>
      */
-    public function flatMap(callable $callback): TryBox
+    public function mod(callable $callback): TryBox
     {
         try {
             return $callback($this);
@@ -65,50 +78,28 @@ class TryBox
     }
 
     /**
-     * Unbox the value unsafely.
+     * Unbox the value, which might be anything including a throwable.
      *
+     * @return T
+     */
+    public function value()
+    {
+        return $this->value;
+    }
+
+
+    /**
      * @return T
      *
      * @throws Throwable
      */
-    public function unbox(): mixed
+    public function rip(): mixed
     {
         if ($this->value instanceof Throwable) {
             throw $this->value;
         }
 
-        return $this->value;
-    }
-
-    /**
-     * Unwrap the value and apply a final transformation on it.
-     * Can be used instead of `unbox` to terminate the sequence.
-     *
-     * @template U
-     * @param callable(T): U $callback
-     * @return U
-     *
-     * @throws Throwable
-     */
-    public function get(callable $callback)
-    {
-        $box = $this->map($callback);
-
-        return $box->unbox();
-    }
-
-    /**
-     * Unbox the value or return a default value.
-     *
-     * @template U
-     * @param U $default
-     * @return T|U
-     */
-    public function unboxOr(mixed $default): mixed
-    {
-        if ($this->value instanceof Throwable) {
-            return $default;
-        }
+        assert(($this->value instanceof Throwable) === false);
 
         return $this->value;
     }
@@ -123,7 +114,7 @@ class TryBox
     {
         try {
             return $this->performAssertion($expected);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return new self($e);
         }
     }
