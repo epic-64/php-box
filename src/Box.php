@@ -9,7 +9,7 @@ use LogicException;
 /**
  * A container that allows chaining transformations and assertions on a value.
  *
- * @template T
+ * @template T of mixed
  */
 class Box
 {
@@ -46,15 +46,15 @@ class Box
     }
 
     /**
-     * Apply a transformation function to the box itself
+     * Modify the box itself via a callback.
      *
-     * This method will always return a new instance of Box, even for objects.
+     * Useful grouping multiple calls on a box into one call (e.g. for common validation rules).
      *
      * @template U
      * @param callable(self<T>): Box<U> $callback
      * @return Box<U>
      */
-    public function flatMap(callable $callback): Box
+    public function mod(callable $callback): Box
     {
         return $callback($this);
     }
@@ -69,7 +69,7 @@ class Box
      */
     public function get(callable $callback)
     {
-        return $callback($this->unbox());
+        return $callback($this->value());
     }
 
     /**
@@ -77,7 +77,7 @@ class Box
      *
      * @return T
      */
-    public function unbox()
+    public function value()
     {
         return $this->value;
     }
@@ -116,20 +116,6 @@ class Box
         }
 
         return $this;
-    }
-
-    /**
-     * Run an assertion against the value and return it.
-     *
-     * @template U
-     * @param U|callable(T):bool $check
-     * @return T
-     */
-    public function assertGet(mixed $check): mixed
-    {
-        $this->assert($check);
-
-        return $this->unbox();
     }
 
     /**
