@@ -65,12 +65,18 @@ class TryBox
     }
 
     /**
-     * Unbox the value.
+     * Unbox the value unsafely.
      *
-     * @return T|Throwable
+     * @return T
+     *
+     * @throws Throwable
      */
     public function unbox(): mixed
     {
+        if ($this->value instanceof Throwable) {
+            throw $this->value;
+        }
+
         return $this->value;
     }
 
@@ -86,11 +92,25 @@ class TryBox
      */
     public function get(callable $callback)
     {
+        $box = $this->map($callback);
+
+        return $box->unbox();
+    }
+
+    /**
+     * Unbox the value or return a default value.
+     *
+     * @template U
+     * @param U $default
+     * @return T|U
+     */
+    public function unboxOr(mixed $default): mixed
+    {
         if ($this->value instanceof Throwable) {
-            throw $this->value;
+            return $default;
         }
 
-        return $callback($this->value);
+        return $this->value;
     }
 
     /**

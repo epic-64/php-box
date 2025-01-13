@@ -72,7 +72,7 @@ test('assertGet throws an exception when the assertion fails', function () {
 
 test('flatMap allows us to replace the box itself', function () {
     $result = Box::of(5)
-        ->flatMap(fn(Box $x) => $x->assert(5)->map(fn($x) => $x + 1))
+        ->mod(fn(Box $x) => $x->assert(5)->map(fn($x) => $x + 1))
         ->unbox();
 
     expect($result)->toBe(6);
@@ -87,7 +87,7 @@ test('use flatMap to compose actions', function () {
             ->assert(fn(string $x) => filter_var($x, FILTER_VALIDATE_EMAIL), 'Not an email');
     };
 
-    expect(fn() => Box::of('asdf')->flatMap($isValidEmail)->unbox())
+    expect(fn() => Box::of('asdf')->mod($isValidEmail)->unbox())
         ->toThrow(LogicException::class, 'Not an email | Value did not pass the callback check.');
 });
 
