@@ -10,24 +10,30 @@ use Throwable;
  * Will catch exceptions and return them as a value.
  *
  * @template T
+ * @template E
  */
 class TryBox
 {
     /**
      * @template U
      * @param U $value
-     * @return TryBox<U>
+     * @return TryBox<U, null>
      */
     public static function of($value): TryBox
     {
-        return new self($value);
+        /** @var TryBox<U, null> $box */
+        $box = new self($value, null);
+
+        return $box;
     }
 
     /**
      * @param T $value
      */
-    public function __construct(private mixed $value)
-    {
+    public function __construct(
+        private $value,
+        private ?Throwable $error = null
+    ) {
     }
 
     /**
@@ -35,123 +41,56 @@ class TryBox
      *
      * @template U
      * @param callable(T): U $callback
-     * @return TryBox<Throwable>|TryBox<U>
+     * @return TryBox<U, null>|TryBox<T, Throwable>
      */
     public function map(callable $callback): TryBox
     {
-        return $this->value instanceof Throwable
-            ? $this
-            : $this->transform($callback);
-    }
-
-    /**
-     * Apply a transformation function to the value.
-     * Will catch exceptions and return them as a value.
-     *
-     * @template U
-     * @param callable(T): U $callback
-     * @return TryBox<U>|TryBox<Throwable>
-     */
-    private function transform(callable $callback): TryBox
-    {
-        try {
-            return new self($callback($this->value));
-        } catch (Throwable $e) {
-            return new self($e);
+        if ($this->error !== null) {
+            return $this;
         }
-    }
 
-    /**
-     * Apply a transformation function to the box itself
-     *
-     * @template U
-     * @param callable(self<T>): TryBox<U> $callback
-     * @return TryBox<U>|TryBox<Throwable>
-     */
-    public function mod(callable $callback): TryBox
-    {
-        try {
-            return $callback($this);
-        } catch (Throwable $e) {
-            return new self($e);
-        }
+        return $this->try($callback);
     }
 
     /**
      * Unbox the value, which might be anything including a throwable.
      *
-     * @return T
+     * @return Throwable|T
      */
     public function value()
     {
-        return $this->value;
+        return $this->error ?? $this->value;
     }
-
 
     /**
      * @return T
      *
      * @throws Throwable
      */
-    public function rip(): mixed
+    public function rip()
     {
-        if ($this->value instanceof Throwable) {
-            throw $this->value;
+        if ($this->error !== null) {
+            throw $this->error;
         }
-
-        assert(($this->value instanceof Throwable) === false);
 
         return $this->value;
     }
 
     /**
-     * Assert that the value is equal to the expected value.
-     *
-     * @param T $expected
-     * @return TryBox<T>|TryBox<Throwable>
+     * @template U
+     * @param callable(T):U $callback
+     * @return TryBox<U, null>|TryBox<T, Throwable>
      */
-    public function assert(mixed $expected): TryBox
+    private function try(callable $callback): TryBox
     {
         try {
-            return $this->performAssertion($expected);
+            /** @var TryBox<U, null> $result */
+            $result = new self($callback($this->value), null);
         } catch (Throwable $e) {
-            return new self($e);
-        }
-    }
-
-    /**
-     * Run an assertion against the value.
-     * Example of a simple strict equality check: ->assert(5)
-     * Example of a callback check:               ->assert(fn($x) => $x > 5)
-     *
-     * @template U
-     * @param U|callable(T):bool $check
-     * @return TryBox<T>|TryBox<Throwable>
-     */
-    public function performAssertion(mixed $check, string $message = ''): TryBox
-    {
-        $isClosure = is_callable($check);
-
-        $pass = $isClosure
-            ? $check($this->value)
-            : $this->value === $check;
-
-        if (! $pass) {
-            $report = $isClosure
-                ? 'Value did not pass the callback check.'
-                : sprintf(
-                    'Failed asserting that two values are the same. Expected %s, got %s.',
-                    var_export($check, true),
-                    var_export($this->value, true)
-                );
-
-            if ($message !== '') {
-                $report = $message . ' | ' . $report;
-            }
-
-            throw new LogicException($report);
+            /** @var TryBox<T, Throwable> $result */
+            $result = new self($this->value, $e);
         }
 
-        return $this;
+        return $result;
     }
 }
