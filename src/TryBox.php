@@ -7,7 +7,8 @@ use Throwable;
 
 /**
  * A container that allows chaining transformations and assertions on a value.
- * Will catch exceptions and return them as a value.
+ * value() will return T|Throwable (must be narrowed manually with error handling).
+ * rip() will return T, but throws an exception if there is an error.
  *
  * @template T
  * @template E

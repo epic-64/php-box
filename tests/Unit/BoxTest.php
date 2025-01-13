@@ -60,16 +60,6 @@ test('assertion by value passes for two equal objects with the same reference', 
     expect($result->number)->toBe(5);
 });
 
-test('assertGet returns the value when the assertion passes', function () {
-    $result = Box::of(5)->assertGet(5);
-
-    expect($result)->toBe(5);
-});
-
-test('assertGet throws an exception when the assertion fails', function () {
-    expect(fn() => Box::of(5)->assertGet(6))->toThrow(LogicException::class);
-});
-
 test('flatMap allows us to replace the box itself', function () {
     $result = Box::of(5)
         ->mod(fn(Box $x) => $x->assert(5)->map(fn($x) => $x + 1))
