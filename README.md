@@ -84,28 +84,25 @@ $user = Box::of($inputEmail)
     ->get(fn($it) => $userRepository->create(['email' => $it]));
 ```
 
-Using flatMap, you can compose presets of operations on boxes:
+Using mod(), you can compose presets of operations:
 ```php
 /** @throws LogicException */
 function assertEmail(Box $box): Box
 {
     return $box
-        ->assert(fn($x)        => is_string($x), 'Not a string')
+        ->assert(fn(mixed $x)  => is_string($x), 'Not a string')
         ->assert(fn(string $x) => strlen($x) > 0, 'Too short')
         ->assert(fn(string $x) => strlen($x) < 256, 'Too long')
         ->assert(fn(string $x) => filter_var($x, FILTER_VALIDATE_EMAIL), 'Not an email');
 }
 
 $validEmail = Box::of('')->flatMap(assertEmail(...))->unbox();
-// throws LogicException: "Value is too short"
+// throws LogicException: "Too short"
 
 $user = Box::of('john@example.org')
-    ->flatMap(fn($box) => assertEmail($box))
+    ->mod(fn($box) => assertEmail($box))
     ->get(fn($email) => $userRepository->create(['email' => $email]));
 ```
-Note, in this example we still have 4 separate assertions and error messages.
-Using flatMap is the key here. Unlike map(), which transforms the value inside the Box,
-flatMap() transforms the Box itself. This allows us to compose behavior in a more functional way.
 
 # Type Safety
 Thanks to meticulously crafted PHPDoc annotations, this class is type safe if you use PHPStan for static analysis.
@@ -137,8 +134,6 @@ The `@template T` annotation tells PHPStan that the class is generic and that th
 In the constructor, we use the $value parameter with the type T,
 and the type of the Box is automatically reverse engineered from the input.
 
-
-
 Examples:
 - `Box::of(5)` will be of type `Box<int>`
 - `Box::of('hello')` will be of type `Box<string>`
@@ -168,10 +163,8 @@ the type of U, and the resulting `Box<U>` is inferred from the return type of th
 
 This mechanism is incredibly powerful at preventing you from writing bad code. And again, a totally normal feature
 in other languages like Java, Scala, Kotlin, Haskell, Rust, F#, C#, Go, Swift, TypeScript.
-Please pick one of these and learn it.
-
 ```php
-$value = Box::of('Hello World')                               // string
+$value = Box::of('Hello World')                              // string
     ->map(fn($value) => strtoupper($value))                  // string 
     ->map(fn($value) => str_replace('WORLD', 'PHP', $value)) // string
     ->map(fn($value) => str_split($value))                   // array<string>

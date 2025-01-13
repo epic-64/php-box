@@ -46,15 +46,15 @@ class Box
     }
 
     /**
-     * Apply a transformation function to the box itself
+     * Modify the box itself via a callback.
      *
-     * This method will always return a new instance of Box, even for objects.
+     * Useful grouping multiple calls on a box into one call (e.g. for common validation rules).
      *
      * @template U
      * @param callable(self<T>): Box<U> $callback
      * @return Box<U>
      */
-    public function flatMap(callable $callback): Box
+    public function mod(callable $callback): Box
     {
         return $callback($this);
     }
