@@ -38,7 +38,7 @@ test('Using rip() on the TryBox will narrow the type but risk throwing an except
     $result = TryBox::of(1)
         ->map(fn($value) => $value + 1)
         ->map(fn($value) => $value + 1)
-        ->rip(); // Can throw exception but the type is narrowed to int
+        ->get(); // Can throw exception but the type is narrowed to int
 
     $result = $result + 1;
 
@@ -50,5 +50,5 @@ test('Using rip() on TryBox with error will cause exception', function () {
         ->map(fn($value) => throw new RuntimeException('boo'))
         ->map(fn($value) => $value + 1);
 
-    expect(fn() => $box->rip())->toThrow(RuntimeException::class, 'boo');
+    expect(fn() => $box->get())->toThrow(RuntimeException::class, 'boo');
 });
