@@ -13,7 +13,7 @@ use Throwable;
  * @template T
  * @template E
  */
-class TryBox
+readonly class TryBox
 {
     /**
      * @template U
@@ -32,7 +32,7 @@ class TryBox
      * @param T $value
      */
     public function __construct(
-        private $value,
+        private mixed      $value,
         private ?Throwable $error = null
     ) {
     }
