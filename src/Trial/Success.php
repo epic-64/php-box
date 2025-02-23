@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Epic64\PhpBox\TryMonad;
+namespace Epic64\PhpBox\Trial;
 
 use Throwable;
 
@@ -32,21 +32,18 @@ final class Success extends Trial
     /**
      * @template U
      * @param callable(T):U $f
-     * @return Success<U>|Failure<mixed>
+     * @return Success<U>|Failure<Throwable>
      */
     public function map(callable $f): Success | Failure
     {
         try {
-            $value = $f($this->value);
-            return new Success($value);
+            return new Success($f($this->value));
         } catch (Throwable $e) {
-            return new Failure($e);
-        }
-    }
+            /** @var Failure<Throwable> $failure */
+            $failure = new Failure($e);
 
-    public function flatMap(callable $f): Trial
-    {
-        return $f($this->value);
+            return $failure;
+        }
     }
 
     public function get(): mixed
@@ -54,6 +51,9 @@ final class Success extends Trial
         return $this->value;
     }
 
+    /**
+     * @return T
+     */
     public function getOrElse(mixed $default): mixed
     {
         return $this->value;
