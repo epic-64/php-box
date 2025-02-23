@@ -64,11 +64,24 @@ class TryBox
     }
 
     /**
+     * @param T $default
+     * @return T
+     */
+    public function getOrElse($default)
+    {
+        if ($this->error !== null) {
+            return $default;
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return T
      *
      * @throws Throwable
      */
-    public function rip()
+    public function get()
     {
         if ($this->error !== null) {
             throw $this->error;
