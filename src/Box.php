@@ -11,7 +11,7 @@ use LogicException;
  *
  * @template T of mixed
  */
-class Box
+readonly class Box
 {
     /**
      * @template U
@@ -54,7 +54,7 @@ class Box
      * @param callable(self<T>): Box<U> $callback
      * @return Box<U>
      */
-    public function mod(callable $callback): Box
+    public function flatMap(callable $callback): Box
     {
         return $callback($this);
     }
