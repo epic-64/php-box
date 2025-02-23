@@ -2,25 +2,18 @@
 
 namespace Tests\Unit;
 
-use Epic64\PhpBox\TryMonad\Success;
+use Epic64\PhpBox\Trial\Success;
 use RuntimeException;
 
 test('trial map applies functions to value', function () {
     $result = new Success(5)
         ->map(fn($value) => $value * 2)
         ->map(fn($value) => $value + 1)
-        ->get();
+        ->getOrElse(0);
 
-    expect($result)->toBe(11);
-});
+    $result = $result + 1;
 
-test('trial flatmap avoids nesting', function () {
-    $result = new Success(5)
-        ->map(fn($value) => $value * 2)
-        ->flatMap(fn($value) => new Success($value + 1))
-        ->get();
-
-    expect($result)->toBe(11);
+    expect($result)->toBe(12);
 });
 
 test('trial getOrElse returns value if success', function () {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Epic64\PhpBox\TryMonad;
+namespace Epic64\PhpBox\Trial;
 
 use Throwable;
 
@@ -11,20 +11,6 @@ use Throwable;
  */
 abstract class Trial
 {
-    /**
-     * @template U
-     * @param callable(T):U $f
-     * @return Success<U>|Failure<Throwable>
-     */
-    abstract public function map(callable $f): mixed;
-
-    /**
-     * @template U
-     * @param callable(T):Trial<U> $f
-     * @return Trial<U>
-     */
-    abstract public function flatMap(callable $f): Trial;
-
     /**
      * @return bool
      */
