@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Epic64\PhpBox;
 
 use LogicException;
+use Throwable;
 
 /**
  * A container that allows chaining transformations and assertions on a value.
