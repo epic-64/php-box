@@ -90,8 +90,8 @@ test('performing a mutation on an object using map() will produce side effects',
     // Problem 2: The object is thrown away and instead $value will simply be 10
     $newObject = Box::of($object)->map(fn($x) => $x->number = 10)->value();
 
-    expect($object->number)->toBe(10, 'Bad: Original object is mutated');
-    expect($newObject)->toBeInt('Bad: $newObject is not an object, instead it is an int.');
+    expect($object->number)->toBe(10, 'Bad: Original object is mutated')
+        ->and($newObject)->toBeInt('Bad: $newObject is not an object, instead it is an int.');
 });
 
 test('assertion by callback passes when check is passed', function () {
@@ -109,7 +109,7 @@ test('we can chain multiple transformations and assertions', function () {
         ->map(strrev(...))->assert('OLLEH')
         ->map(str_split(...))->assert(['O', 'L', 'L', 'E', 'H'])
         ->map(fn($arr) => array_map(ord(...), $arr))->assert([79, 76, 76, 69, 72])
-        ->map(array_sum(...))->assert(372)->assert(fn($x) => $x > 0)
+        ->map(array_sum(...))->assert(372)
         ->get(fn($x) => $x + 100);
 
     expect($result)->toBe(472);
